@@ -1,1 +1,1 @@
-Read Pdfploaded for more deesadasdfai
+Read pdf uploaded for more details
