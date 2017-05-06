@@ -11,97 +11,206 @@ import java.util.*;
  * @author harshmiddha
  */
 public class Spreadsheet {
-    
+
     /**
      * @throws java.io.IOException
      */
-    private String input[][];
-    public static Scanner sc =new Scanner(System.in);
-            
+    private Scanner sc;
+    private static int n, m;
+    private StringBuilder sb;
+
     public static void main(String[] args) throws IOException {
-                
-                
-                int m = sc.nextInt();
-                int n = sc.nextInt();
-                sc.nextLine();
 
-                Spreadsheet ss = new Spreadsheet();
-                ss.input = ss.takeInput(n, m);
-                
-                for (int i = 0; i<n; i++) {
-                    for (int j = 0; j<m; j++) {
-                        boolean[][] visited = new boolean[n][m];
-                        System.out.println(ss.evalRPN(ss.input[i][j].split(" "), n ,m, visited, i, j));
-                    }
-                }
-	}
- 
-    private String evalRPN(String[] tokens, int n , int m, boolean[][] visited, int i, int j) {
+        Spreadsheet ss = new Spreadsheet();
 
-            String operators = "+-*/";
+        ss.sc = new Scanner(System.in);
+        m = ss.sc.nextInt();
+        n = ss.sc.nextInt();
 
-            Stack<Float> stack = new Stack<>();
-            boolean[][] visitedCopy = new boolean[n][m];
-            visitedCopy = visited;
-            for (String t : tokens) {
-                    char firstCharacter = t.charAt(0);
+        ss.sc.nextLine();
 
-                    if ((firstCharacter >= '0' && firstCharacter <= '9') || firstCharacter == '-') {
-                             //push to stack if it is a number
-                            stack.push(Float.valueOf(t));
-                    } else if(firstCharacter >= 'A' && firstCharacter <= 'Z') {
-                            StringBuilder sb = new StringBuilder(t);
-                            sb.deleteCharAt(0);
-                            int column = Integer.parseInt(sb.toString());
-
-                            try {   
-                                    Integer.parseInt(this.input[firstCharacter - 'A'][column - 1]);
-                            } catch(NumberFormatException ex) {
-                                    if (visited[i][j]) {
-                                        System.out.println("Loop detected");
-                                        System.exit(1);
-                                    }
-                                    visited[i][j] = true;
-                                    input[firstCharacter - 'A'][column - 1] = String.valueOf(evalRPN((input[firstCharacter - 'A'][column - 1]).split(" "), n ,m, visited, firstCharacter - 'A' ,column - 1));
-
-                            }
-
-                            stack.push(Float.valueOf(input[firstCharacter - 'A'][column - 1]));
-                    } else {
-                            //pop numbers from stack if it is an operator
-                            Float a = stack.pop();
-                            Float b = stack.pop();
-
-                            switch (t) {
-                            case "+":
-                                    stack.push(a + b);
-                                    break;
-                            case "-":
-                                    stack.push(b - a);
-                                    break;
-                            case "*":
-                                    stack.push(a * b);
-                                    break;
-                            case "/":
-                                    stack.push(b / a);
-                                    break;
-                            }
-                    }
-                    visited = visitedCopy;
+        String input[][] = ss.takeInput(n, m);
+        String output[][] = new String[n][m];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                boolean[][] visited = new boolean[n][m];
+                output[i][j] = ss.evalSentence(input[i][j].split(" "), visited, i, j, input);
             }
+        }
 
-            return String.format("%.5f",stack.pop());
+        ss.printOutput(output);
     }
 
     private String[][] takeInput(int n, int m) {
-        
-            String input[][] = new String[n][m];
-            
-            for (int i =0, size = n*m; i<size; i++) {
-                String str = sc.nextLine();
-                input[i/(m)][i - (i/m)*m] =str;
-            }
-        
+        String[][] input = new String[n][m];
+
+        for (int i = 0, size = n * m; i < size; i++) {
+            String str = sc.nextLine();
+            input[i / (m)][i - (i / m) * m] = str;
+        }
+
         return input;
     }
+    
+    private void printOutput(String[][] output) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                System.out.println(String.format("%.5f",Float.valueOf(output[i][j])));
+            }
+        }
+    }
+
+    private String evalSentence(String[] words, boolean[][] visited, int i, int j, String[][] input) {
+
+        Stack < Float > stack = new Stack < > ();
+        boolean[][] visitedCopy = new boolean[n][m];
+        visitedCopy = visited;
+        for (String word: words) {
+            char firstCharacter = word.charAt(0);
+            String firstTwoChar = word.substring(0, Math.min(word.length(), 2));
+
+            if (firstTwoChar.equals("++") ||
+                firstTwoChar.equals("--") ||
+                (firstCharacter >= 'A' && firstCharacter <= 'Z')) {
+
+                stack.push(evalWord(word, visited, input, i, j));
+                evalWordWithPostOperators(word, input, stack.peek());
+
+            } else if ((firstCharacter >= '0' && firstCharacter <= '9') 
+                    || (firstCharacter == '-' && word.length() > 1)) {
+                //push to stack if it is a number +ve or -ve
+                stack.push(Float.valueOf(word));
+
+            } else {
+                //pop numbers from stack if it is an operator
+                Float a = stack.pop();
+                Float b = stack.pop();
+
+                switch (word) {
+                    case "+":
+                        stack.push(a + b);
+                        break;
+                    case "-":
+                        stack.push(b - a);
+                        break;
+                    case "*":
+                        stack.push(a * b);
+                        break;
+                    case "/":
+                        stack.push(b / a);
+                        break;
+                }
+            }
+            visited = visitedCopy;
+        }
+        Float sentenceValue = stack.pop();
+        input[i][j] = String.format("%.5f", sentenceValue);
+
+        return String.format("%.5f", sentenceValue);
+    }
+
+    private Float evalWord(String word, boolean[][] visited, String input[][], int i, int j) throws NumberFormatException {
+        String firstTwoChar = word.substring(0, Math.min(word.length(), 2));
+        int preIncrementValue = 0;
+
+        String wordWithoutOperators = word.replace("++", "");
+        wordWithoutOperators = wordWithoutOperators.replace("--", "");
+
+        char rowName = wordWithoutOperators.charAt(0);
+        sb = new StringBuilder(wordWithoutOperators);
+        sb.deleteCharAt(0);
+        int column = Integer.parseInt(sb.toString());
+
+        sb = new StringBuilder(word);
+
+        if (firstTwoChar.equals("++")) {
+            sb.deleteCharAt(0);
+            sb.deleteCharAt(0);
+
+            word = sb.toString();
+            preIncrementValue = 1;
+        } else if (firstTwoChar.equals("--")) {
+            sb.deleteCharAt(0);
+            sb.deleteCharAt(0);
+
+            word = sb.toString();
+            preIncrementValue = -1;
+        } else {
+
+            try {
+                if ((word.charAt(0) >= 'A' || word.charAt(0) <= 'Z')) {
+
+                    return Float.parseFloat(input[rowName - 'A'][column - 1]);
+                } else if (word.charAt(0) == '-' && word.charAt(1) == '-') {
+                    sb.deleteCharAt(0);
+                    sb.deleteCharAt(0);
+
+                    word = sb.toString();
+                    input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) - 1);
+                } else if (word.charAt(0) == '+' && word.charAt(1) == '+') {
+                    sb.deleteCharAt(0);
+                    sb.deleteCharAt(0);
+
+                    word = sb.toString();
+                    input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) + 1);
+                }
+            } catch (NumberFormatException ex) {
+
+            }
+
+            if (visited[i][j]) {
+                System.out.println("Loop detected");
+                System.exit(1);
+            }
+
+            visited[i][j] = true;
+            input[i][j] = Float.toString(Float.valueOf(evalSentence(input[rowName - 'A'][column - 1].split(" "), visited, rowName - 'A', column - 1, input)) + preIncrementValue);
+
+            return Float.valueOf(input[i][j]);
+        }
+
+
+        return evalWord(word, visited, input, i, j) + preIncrementValue;
+    }
+
+    private void evalWordWithPostOperators(String word, String[][] input, Float wordValue) {
+
+        int count = postUnaryOperatorsValue(word);
+
+        String wordWithoutOperators = word.replace("++", "");
+        wordWithoutOperators = wordWithoutOperators.replace("--", "");
+
+        char firstCharacter = wordWithoutOperators.charAt(0);
+        sb = new StringBuilder(wordWithoutOperators);
+        sb.deleteCharAt(0);
+        int column = Integer.parseInt(sb.toString());
+
+        input[firstCharacter - 'A'][column - 1] =
+            String.valueOf(
+                count +
+                wordValue
+            );
+    }
+
+    private int postUnaryOperatorsValue(String word) {
+        int count = 0;
+        int i = word.length() - 1;
+        OUTER:
+            while (i >= 0) {
+                switch (word.charAt(i)) {
+                    case '+':
+                        count++;
+                        break;
+                    case '-':
+                        count--;
+                        break;
+                    default:
+                        break OUTER;
+                }
+                i = i - 2;
+            }
+
+        return count;
+    }
+
 }
