@@ -51,11 +51,11 @@ public class Spreadsheet {
 
         return input;
     }
-    
+
     private void printOutput(String[][] output) {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
-                System.out.println(String.format("%.5f",Float.valueOf(output[i][j])));
+                System.out.println(String.format("%.5f", Float.valueOf(output[i][j])));
             }
         }
     }
@@ -76,9 +76,9 @@ public class Spreadsheet {
                 stack.push(evalWord(word, visited, input, i, j));
                 evalWordWithPostOperators(word, input, stack.peek());
 
-            } else if ((firstCharacter >= '0' && firstCharacter <= '9')
-                     || (firstCharacter == '-' && word.length() > 1)) {
-                 //push to stack if it is a number +ve or -ve
+            } else if ((firstCharacter >= '0' && firstCharacter <= '9') ||
+                (firstCharacter == '-' && word.length() > 1)) {
+                //push to stack if it is a number +ve or -ve
                 stack.push(evalWord(word, visited, input, i, j));
 
             } else {
@@ -110,26 +110,24 @@ public class Spreadsheet {
     }
 
     private Float evalWord(String word, boolean[][] visited, String input[][], int i, int j) throws NumberFormatException {
-        String firstTwoChar = word.substring(0, Math.min(word.length(), 2));
-        int preIncrementValue = 0;
 
+        if (isNumeric(word)) {
+            return Float.valueOf(word);
+        }
+
+        String firstTwoChar = word.substring(0, Math.min(word.length(), 2));
         String wordWithoutOperators = getWordWithoutOperators(word);
 
         char rowName = wordWithoutOperators.charAt(0);
         sb = new StringBuilder(wordWithoutOperators);
         sb.deleteCharAt(0);
         int column = Integer.parseInt(sb.toString());
-
-        if (isNumeric(word)) {
-            return Float.valueOf(word);
-        }
+        int preIncrementValue = 0;
 
         if (visited[i][j]) {
             System.out.println("Loop detected");
             System.exit(1);
         }
-
-        visited[i][j] = true;
 
         sb = new StringBuilder(word);
 
@@ -147,6 +145,7 @@ public class Spreadsheet {
             preIncrementValue = -1;
         } else {
             if ((word.charAt(0) >= 'A' || word.charAt(0) <= 'Z') && isNumeric(input[rowName - 'A'][column - 1])) {
+                visited[i][j] = true;
 
                 return Float.parseFloat(input[rowName - 'A'][column - 1]);
             } else if (word.charAt(0) == '-' && word.charAt(1) == '-') {
@@ -165,7 +164,7 @@ public class Spreadsheet {
                 sb.deleteCharAt(0);
 
                 word = sb.toString();
-                input[rowName - 'A'][column - 1] = Float.toString( -1 * evalWord(word, visited, input, i, j) + 1);
+                input[rowName - 'A'][column - 1] = Float.toString(-1 * evalWord(word, visited, input, i, j) + 1);
             } else {
                 input[i][j] = Float.toString(Float.valueOf(evalSentence(input[rowName - 'A'][column - 1].split(" "), visited, rowName - 'A', column - 1, input)) + preIncrementValue);
             }
@@ -180,7 +179,6 @@ public class Spreadsheet {
     private void evalWordWithPostOperators(String word, String[][] input, Float wordValue) {
 
         int count = postUnaryOperatorsValue(word);
-
         String wordWithoutOperators = getWordWithoutOperators(word);
 
         char rowName = wordWithoutOperators.charAt(0);
@@ -218,14 +216,12 @@ public class Spreadsheet {
 
     private boolean isNumeric(String str) {
 
-        try
-        {
-          double d = Float.parseFloat(str);
+        try {
+            double d = Float.parseFloat(str);
+        } catch (NumberFormatException nfe) {
+            return false;
         }
-        catch(NumberFormatException nfe)
-        {
-          return false;
-        }
+
         return true;
     }
 
