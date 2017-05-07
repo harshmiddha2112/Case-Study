@@ -79,7 +79,7 @@ public class Spreadsheet {
             } else if ((firstCharacter >= '0' && firstCharacter <= '9') 
                     || (firstCharacter == '-' && word.length() > 1)) {
                 //push to stack if it is a number +ve or -ve
-                stack.push(Float.valueOf(word));
+                stack.push(evalWord(word, visited, input, i, j));
 
             } else {
                 //pop numbers from stack if it is an operator
@@ -153,6 +153,11 @@ public class Spreadsheet {
 
                     word = sb.toString();
                     input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) + 1);
+                } else if (word.charAt(0) == '-') {
+                    sb.deleteCharAt(0);
+
+                    word = sb.toString();
+                    input[rowName - 'A'][column - 1] = Float.toString( -1 * evalWord(word, visited, input, i, j) + 1);
                 }
             } catch (NumberFormatException ex) {
 
