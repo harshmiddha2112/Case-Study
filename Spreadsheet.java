@@ -152,14 +152,12 @@ public class Spreadsheet {
                 sb.deleteCharAt(0);
                 visited[i][j] = true;
 
-
                 word = sb.toString();
                 input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) - 1);
             } else if (word.charAt(0) == '+' && word.charAt(1) == '+') {
                 sb.deleteCharAt(0);
                 sb.deleteCharAt(0);
                 visited[i][j] = true;
-
 
                 word = sb.toString();
                 input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) + 1);
