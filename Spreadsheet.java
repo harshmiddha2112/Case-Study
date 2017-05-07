@@ -12,25 +12,21 @@ import java.util.*;
  */
 public class Spreadsheet {
 
-    /**
-     * @throws java.io.IOException
-     */
+
     private Scanner sc;
     private static int n, m;
     private StringBuilder sb;
 
+    /**
+     * @throws java.io.IOException
+     */
     public static void main(String[] args) throws IOException {
 
         Spreadsheet ss = new Spreadsheet();
 
-        ss.sc = new Scanner(System.in);
-        m = ss.sc.nextInt();
-        n = ss.sc.nextInt();
-
-        ss.sc.nextLine();
-
-        String input[][] = ss.takeInput(n, m);
+        String input[][] = ss.takeInput();
         String output[][] = new String[n][m];
+
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
                 boolean[][] visited = new boolean[n][m];
@@ -41,7 +37,18 @@ public class Spreadsheet {
         ss.printOutput(output);
     }
 
-    private String[][] takeInput(int n, int m) {
+    /**
+     *
+     * @param n - number of rows
+     * @param m - number of column
+     * @return     String array with input strings
+     */
+    private String[][] takeInput() {
+        sc = new Scanner(System.in);
+        m = sc.nextInt();
+        n = sc.nextInt();
+        sc.nextLine();
+
         String[][] input = new String[n][m];
 
         for (int i = 0, size = n * m; i < size; i++) {
@@ -52,6 +59,11 @@ public class Spreadsheet {
         return input;
     }
 
+    /**
+     * Prints the String array in particular format
+     *
+     * @param output
+     */
     private void printOutput(String[][] output) {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
@@ -60,6 +72,17 @@ public class Spreadsheet {
         }
     }
 
+    /**
+     *
+     * Evaluates sentence containing words separated by space
+     *
+     * @param words
+     * @param visited
+     * @param i
+     * @param j
+     * @param input
+     * @return
+     */
     private String evalSentence(String[] words, boolean[][] visited, int i, int j, String[][] input) {
 
         Stack < Float > stack = new Stack < > ();
@@ -109,6 +132,17 @@ public class Spreadsheet {
         return String.format("%.5f", sentenceValue);
     }
 
+    /**
+     * Evaluates value for a input word
+     *
+     * @param word
+     * @param visited
+     * @param input
+     * @param i
+     * @param j
+     * @return
+     * @throws NumberFormatException
+     */
     private Float evalWord(String word, boolean[][] visited, String input[][], int i, int j) throws NumberFormatException {
 
         if (isNumeric(word)) {
@@ -180,6 +214,12 @@ public class Spreadsheet {
         return evalWord(word, visited, input, i, j) + preIncrementValue;
     }
 
+    /**
+     *
+     * @param word
+     * @param input
+     * @param wordValue
+     */
     private void evalWordWithPostOperators(String word, String[][] input, Float wordValue) {
 
         int count = postUnaryOperatorsValue(word);
@@ -197,6 +237,11 @@ public class Spreadsheet {
             );
     }
 
+    /**
+     *
+     * @param word
+     * @return
+     */
     private int postUnaryOperatorsValue(String word) {
         int count = 0;
         int i = word.length() - 1;
