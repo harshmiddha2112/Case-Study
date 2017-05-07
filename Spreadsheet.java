@@ -120,7 +120,11 @@ public class Spreadsheet {
                         stack.push(a * b);
                         break;
                     case "/":
-                        stack.push(b / a);
+                        try {
+                            stack.push(b / a);
+                        } catch(ArithmeticException ex) {
+                            System.exit(2);
+                        }
                         break;
                 }
             }
