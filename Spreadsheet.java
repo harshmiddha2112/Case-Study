@@ -145,27 +145,33 @@ public class Spreadsheet {
             preIncrementValue = -1;
         } else {
             if ((word.charAt(0) >= 'A' || word.charAt(0) <= 'Z') && isNumeric(input[rowName - 'A'][column - 1])) {
-                visited[i][j] = true;
 
                 return Float.parseFloat(input[rowName - 'A'][column - 1]);
             } else if (word.charAt(0) == '-' && word.charAt(1) == '-') {
                 sb.deleteCharAt(0);
                 sb.deleteCharAt(0);
+                visited[i][j] = true;
+
 
                 word = sb.toString();
                 input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) - 1);
             } else if (word.charAt(0) == '+' && word.charAt(1) == '+') {
                 sb.deleteCharAt(0);
                 sb.deleteCharAt(0);
+                visited[i][j] = true;
+
 
                 word = sb.toString();
                 input[rowName - 'A'][column - 1] = Float.toString(evalWord(word, visited, input, i, j) + 1);
             } else if (word.charAt(0) == '-') {
                 sb.deleteCharAt(0);
+                visited[i][j] = true;
 
                 word = sb.toString();
                 input[rowName - 'A'][column - 1] = Float.toString(-1 * evalWord(word, visited, input, i, j) + 1);
             } else {
+                visited[i][j] = true;
+
                 input[i][j] = Float.toString(Float.valueOf(evalSentence(input[rowName - 'A'][column - 1].split(" "), visited, rowName - 'A', column - 1, input)) + preIncrementValue);
             }
 
